@@ -1,0 +1,35 @@
+* field.h/ field.c lib
+
+#include <stdio.h>
+#define MAXLEN 1001
+#define MAXFIELDS 1000
+
+typedef struct inputstruct {
+  char *name;               /* File name */
+  FILE *f;                  /* File descriptor */
+  int line;                 /* Line number */
+  char text1[MAXLEN];       /* The line */
+  char text2[MAXLEN];       /* Working -- contains fields */
+  int NF;                   /* Number of fields */
+  char *fields[MAXFIELDS];  /* Pointers to fields */
+  int file;                 /* 1 for file, 0 for popen */
+} *IS;
+
+extern IS new_inputstruct(/* FILENAME -- NULL for stdin */);
+extern IS pipe_inputstruct(/* COMMAND -- NULL for stdin */);
+extern int get_line(/* IS */); /* returns NF, or -1 on EOF.  Does not close the file */
+extern void jettison_inputstruct(/* IS */);  /* frees the IS and fcloses the file */
+
+- The data structure consists of a type definition and four procedure calls
+
+- new_inputstruct(char* fileName): To read a file, takes the file name as its argument(NULL for standard input), and returns an IS as a result
++ Note that the IS is a pointer to a struct inputstruct
+
+- Once you have an IS, you call get_line() on it to read a line. Get_line() changes the state of the IS to reflect the reading of the line.
++ It puts the contents of the line in text1.
++ It breaks up the line into words. The NF field contains the number of words in the field. The first NF slots of the fields array point to each of the NF words (and these words are null-terminated).
++ The line field contains the line number of the line.
++ Get_line() returns the NF field as its return value.
++ It returns -1 when it reaches the end of the file.
+
+- Jettison_inputstruct() closes the file associated with the IS and deallocates (frees) the IS
